@@ -12,6 +12,7 @@ Authentication & Authorization Microservice for SmartConnect Education Platform.
 - [Getting Started](#getting-started)
 - [API Documentation](#api-documentation)
 - [Testing](#testing)
+- [Security](#security)
 - [Deployment](#deployment)
 
 ## 🎯 Overview
@@ -251,6 +252,53 @@ Default users for testing:
 | admin | Admin@123456 | SUPER_ADMIN |
 | student_demo | Student@123 | STUDENT |
 | teacher_demo | Teacher@123 | TEACHER |
+
+## 🔒 Security
+
+### Important Security Guidelines
+
+⚠️ **NEVER commit sensitive files to version control!**
+
+See [SECURITY.md](SECURITY.md) for detailed security guidelines.
+
+### Quick Security Checklist
+
+- ✅ Use `.env.example` as template (never commit `.env`)
+- ✅ Generate strong JWT secret: `openssl rand -base64 64`
+- ✅ Use different credentials for each environment
+- ✅ Enable HTTPS in production
+- ✅ Rotate secrets regularly
+- ✅ Review `.gitignore` before committing
+
+### Protected Files
+
+These files are **automatically ignored** by Git:
+- `.env` and `.env.*` (except `.env.example`)
+- `application-prod.properties`
+- `*-secret.properties`
+- `*.properties.local`
+
+### Setup Instructions
+
+1. Copy environment template:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Generate secure JWT secret:
+   ```bash
+   openssl rand -base64 64
+   ```
+
+3. Update `.env` with your configuration
+
+4. Verify `.env` is NOT tracked:
+   ```bash
+   git status
+   # .env should NOT appear in output
+   ```
+
+For complete security guidelines, see [SECURITY.md](SECURITY.md).
 
 ## 🗄️ Database
 
