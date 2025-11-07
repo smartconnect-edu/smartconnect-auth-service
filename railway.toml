@@ -1,6 +1,7 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
+watchPatterns = ["src/**", "pom.xml", "Dockerfile"]
 
 [deploy]
 startCommand = "java -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -jar app.jar"
@@ -8,7 +9,4 @@ restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
 healthcheckPath = "/api/actuator/health"
 healthcheckTimeout = 100
-
-[build.watchPatterns]
-patterns = ["src/**", "pom.xml", "Dockerfile"]
 
