@@ -6,8 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -116,6 +116,22 @@ public class GlobalExceptionHandler {
         );
         
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(LockedException.class)
+    public ResponseEntity<ErrorResponse> handleLockedException(
+            LockedException ex,
+            HttpServletRequest request) {
+        log.error("Account locked: {}", ex.getMessage());
+        
+        ErrorResponse error = ErrorResponse.of(
+            HttpStatus.LOCKED.value(),
+            "Account Locked",
+            ex.getMessage(),
+            request.getRequestURI()
+        );
+        
+        return new ResponseEntity<>(error, HttpStatus.LOCKED);
     }
 
     @ExceptionHandler(AuthenticationException.class)

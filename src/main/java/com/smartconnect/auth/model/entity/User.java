@@ -49,15 +49,18 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "role", nullable = false, length = 20)
     private UserRole role;
 
+    @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;
 
+    @Builder.Default
     @Column(name = "is_email_verified")
     private Boolean isEmailVerified = false;
 
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
+    @Builder.Default
     @Column(name = "failed_login_attempts")
     private Integer failedLoginAttempts = 0;
 

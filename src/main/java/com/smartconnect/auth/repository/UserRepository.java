@@ -63,5 +63,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
      */
     @Query("SELECT u FROM User u WHERE u.failedLoginAttempts >= :threshold AND u.isActive = true")
     List<User> findUsersWithFailedLogins(@Param("threshold") Integer threshold);
+
+    /**
+     * Find all active users
+     */
+    org.springframework.data.domain.Page<User> findAllByIsActiveTrue(org.springframework.data.domain.Pageable pageable);
 }
 

@@ -12,7 +12,7 @@ public final class Constants {
     public static final long JWT_REFRESH_TOKEN_EXPIRATION = 604800000; // 7 days
     
     // API Paths
-    public static final String API_V1_PREFIX = "/api/v1";
+    public static final String API_V1_PREFIX = "/v1";
     public static final String AUTH_BASE_PATH = API_V1_PREFIX + "/auth";
     public static final String USER_BASE_PATH = API_V1_PREFIX + "/users";
     
@@ -26,9 +26,8 @@ public final class Constants {
         AUTH_BASE_PATH + "/reset-password",
         
         // Health & Actuator endpoints
-        "/api/health",
+        "/health",
         "/actuator/**",
-        "/api/actuator/**",
         
         // Swagger & OpenAPI endpoints
         "/swagger-ui/**",

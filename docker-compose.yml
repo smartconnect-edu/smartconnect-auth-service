@@ -1,39 +1,42 @@
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:14-alpine
-    container_name: smartconnect-auth-db
+    image: postgres:16-alpine
+    container_name: smartconnect-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_DB: smartconnect_auth
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: smartconnect
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - smartconnect-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - smartconnect-network
 
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: smartconnect-auth-redis
+    container_name: smartconnect-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
-    networks:
-      - smartconnect-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 5
+    networks:
+      - smartconnect-network
 
   # Auth Service
   auth-service:
@@ -41,29 +44,65 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: smartconnect-auth-service
-    ports:
-      - "3001:3001"
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: smartconnect_auth
-      DB_USERNAME: postgres
-      DB_PASSWORD: smartconnect
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      JWT_SECRET: your-super-secret-jwt-key-for-development
-      SERVER_PORT: 3001
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    environment:
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      
+      # Database Configuration
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: smartconnect_auth
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-password}
+      
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production-minimum-512-bits-required-for-hs512-algorithm}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION:-86400000}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION:-604800000}
+      
+      # Security Configuration
+      ACCOUNT_LOCK_THRESHOLD: ${ACCOUNT_LOCK_THRESHOLD:-5}
+      ACCOUNT_LOCK_DURATION_MINUTES: ${ACCOUNT_LOCK_DURATION_MINUTES:-30}
+      
+      # CORS Configuration
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      
+      # Server Configuration
+      SERVER_PORT: 3001
+      SERVER_CONTEXT_PATH: /api
+      
+      # Logging
+      LOGGING_LEVEL: ${LOGGING_LEVEL:-INFO}
+      
+      # JVM Options
+      JAVA_OPTS: >-
+        -Xms512m 
+        -Xmx1024m
+        -XX:+UseG1GC
+        -XX:MaxGCPauseMillis=200
+        -XX:+UseStringDeduplication
+    ports:
+      - "3001:3001"
+    volumes:
+      - app_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     networks:
       - smartconnect-network
-    restart: unless-stopped
-    volumes:
-      - ./logs:/app/logs
 
 networks:
   smartconnect-network:
@@ -71,5 +110,8 @@ networks:
 
 volumes:
   postgres_data:
+    driver: local
   redis_data:
-
+    driver: local
+  app_logs:
+    driver: local

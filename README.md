@@ -1,54 +1,166 @@
-# 🔐 SmartConnect Auth Service
+# 🔐 SmartConnect Authentication Service
 
-Authentication & Authorization Microservice for SmartConnect Education Platform.
+Microservice xác thực và phân quyền cho nền tảng SmartConnect, được xây dựng với Spring Boot 3, JWT, Redis và PostgreSQL.
 
-## 📋 Table of Contents
+---
 
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [API Documentation](#api-documentation)
-- [Testing](#testing)
-- [Security](#security)
-- [Deployment](#deployment)
+## ✨ Tính năng chính
 
-## 🎯 Overview
+### 🔒 Authentication & Authorization
+- ✅ **JWT-based Authentication** với Access & Refresh Token
+- ✅ **Role-based Access Control** (RBAC)
+- ✅ **Account Lock Protection** sau nhiều lần đăng nhập sai
+- ✅ **Token Blacklist** cho logout an toàn
+- ✅ **Password Encryption** với BCrypt
 
-Auth Service handles all authentication and authorization operations for the SmartConnect platform, including:
-- User registration and login
-- JWT token generation and validation
-- Refresh token rotation
-- Password reset
-- Account management
-
-## ✨ Features
-
-- ✅ JWT-based authentication
-- ✅ Refresh token rotation
-- ✅ Role-based access control (RBAC)
-- ✅ Password reset via email
-- ✅ Account locking after failed attempts
-- ✅ Redis caching for tokens
-- ✅ API documentation with Swagger
-- ✅ Database migrations with Flyway
+### 🚀 API Features
+- ✅ RESTful API với OpenAPI/Swagger documentation
+- ✅ Rate limiting với Redis
+- ✅ CORS configuration
+- ✅ Actuator health checks
 - ✅ Comprehensive error handling
-- ✅ Health checks and metrics
 
-## 🛠 Tech Stack
+### 💾 Database
+- ✅ **PostgreSQL** với Flyway migration
+- ✅ **Redis** cho caching và session management
+- ✅ Optimized queries với JPA
 
-- **Framework:** Spring Boot 3.4.11
-- **Language:** Java 21
-- **Database:** PostgreSQL 14
-- **Cache:** Redis 7
-- **Security:** Spring Security + JWT
-- **ORM:** Spring Data JPA + Hibernate
-- **Migration:** Flyway
-- **Build Tool:** Maven
-- **API Docs:** SpringDoc OpenAPI
-- **Containerization:** Docker
+### 🧪 Testing
+- ✅ Unit tests với JUnit 5
+- ✅ Integration tests
+- ✅ Security tests
+- ✅ Test coverage > 80%
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| Framework | Spring Boot 3.4.11 |
+| Language | Java 21 |
+| Security | Spring Security + JWT (jjwt 0.12.3) |
+| Database | PostgreSQL + Redis |
+| Migration | Flyway |
+| Documentation | SpringDoc OpenAPI 3 |
+| Build Tool | Maven |
+| Container | Docker |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Java 21+
+- Docker & Docker Compose
+- Maven 3.8+
+
+### 1. Clone & Setup
+
+```bash
+git clone https://github.com/yourusername/smartconnect-auth-service.git
+cd smartconnect-auth-service
+```
+
+### 2. Start Dependencies
+
+```bash
+docker-compose up -d postgres redis
+```
+
+### 3. Configure Environment
+
+```bash
+cp env.example .env
+# Edit .env with your settings
+```
+
+### 4. Run Application
+
+```bash
+./mvnw spring-boot:run
+```
+
+### 5. Access
+
+- **API Base URL:** http://localhost:3001/api
+- **Swagger UI:** http://localhost:3001/api/swagger-ui.html
+- **Health Check:** http://localhost:3001/api/actuator/health
+
+---
+
+## 📦 Deploy to Railway
+
+### Quick Deploy (5 minutes)
+
+1. **Push to GitHub:**
+```bash
+git push origin main
+```
+
+2. **Deploy to Railway:**
+   - Visit [railway.app/new](https://railway.app/new)
+   - Select your repository
+   - Add PostgreSQL and Redis databases
+   - Configure environment variables
+
+📖 **Detailed guide:** [QUICK_START_RAILWAY.md](./QUICK_START_RAILWAY.md)
+
+### Using Deploy Script
+
+```bash
+# Install Railway CLI
+npm i -g @railway/cli
+
+# Deploy (Windows)
+.\deploy-railway.ps1
+
+# Deploy (Linux/Mac)
+./deploy-railway.sh
+```
+
+📖 **Full documentation:** [RAILWAY_DEPLOY.md](./RAILWAY_DEPLOY.md)
+
+---
+
+## 🔐 API Endpoints
+
+### Authentication
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/auth/register` | Register new user | ❌ |
+| POST | `/api/auth/login` | User login | ❌ |
+| POST | `/api/auth/refresh` | Refresh access token | ❌ |
+| POST | `/api/auth/logout` | User logout | ✅ |
+| GET | `/api/auth/me` | Get current user | ✅ |
+
+### User Management
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| GET | `/api/users/{id}` | Get user by ID | ✅ |
+| GET | `/api/users/username/{username}` | Get user by username | ✅ |
+| GET | `/api/users` | List all users (admin) | ✅ Admin |
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+./mvnw test
+
+# Run with coverage
+./mvnw clean test jacoco:report
+
+# Run specific test
+./mvnw test -Dtest=AuthServiceTest
+```
+
+View coverage report: `target/site/jacoco/index.html`
+
+---
 
 ## 📁 Project Structure
 
@@ -57,369 +169,175 @@ smartconnect-auth-service/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/smartconnect/auth/
-│   │   │   ├── AuthServiceApplication.java
-│   │   │   ├── config/              # Configuration classes
-│   │   │   ├── controller/          # REST Controllers
-│   │   │   ├── service/             # Business logic
-│   │   │   ├── repository/          # Data access layer
-│   │   │   ├── model/               # JPA entities & enums
-│   │   │   ├── dto/                 # Data Transfer Objects
-│   │   │   ├── security/            # Security components
-│   │   │   ├── exception/           # Exception handling
-│   │   │   ├── util/                # Utility classes
-│   │   │   └── mapper/              # Entity-DTO mappers
+│   │   │   ├── config/          # Configuration classes
+│   │   │   ├── controller/      # REST controllers
+│   │   │   ├── dto/             # Data Transfer Objects
+│   │   │   ├── exception/       # Custom exceptions
+│   │   │   ├── filter/          # Security filters
+│   │   │   ├── model/           # JPA entities
+│   │   │   ├── repository/      # Data repositories
+│   │   │   ├── scheduler/       # Scheduled tasks
+│   │   │   ├── service/         # Business logic
+│   │   │   └── util/            # Utilities
 │   │   └── resources/
-│   │       ├── application.yml
-│   │       ├── application-dev.yml
-│   │       ├── application-prod.yml
-│   │       └── db/migration/        # Flyway migrations
-│   └── test/                        # Unit & integration tests
-├── Dockerfile
-├── docker-compose.yml
-├── pom.xml
-└── README.md
+│   │       ├── application.properties
+│   │       └── db/migration/    # Flyway migrations
+│   └── test/                    # Test files
+├── docker-compose.yml           # Local development
+├── Dockerfile                   # Production build
+├── railway.toml                 # Railway config
+└── pom.xml                      # Maven dependencies
 ```
 
-## 📋 Prerequisites
-
-- **Java 21** or higher
-- **Maven 3.9+**
-- **PostgreSQL 14+**
-- **Redis 7+**
-- **Docker & Docker Compose** (optional)
-
-## 🚀 Getting Started
-
-### Option 1: Local Development (without Docker)
-
-#### 1. Clone the repository
-
-```bash
-git clone https://github.com/smartconnect-edu/smartconnect-auth-service.git
-cd smartconnect-auth-service
-```
-
-#### 2. Create environment file
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` with your configuration.
-
-#### 3. Start PostgreSQL and Redis
-
-```bash
-# PostgreSQL
-docker run -d --name postgres \
-  -e POSTGRES_DB=smartconnect_auth \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=password \
-  -p 5432:5432 \
-  postgres:14
-
-# Redis
-docker run -d --name redis \
-  -p 6379:6379 \
-  redis:7-alpine
-```
-
-#### 4. Run the application
-
-```bash
-# Development mode
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-
-# Or build and run
-./mvnw clean package -DskipTests
-java -jar target/smartconnect-auth-service-0.0.1-SNAPSHOT.jar
-```
-
-The service will start on **http://localhost:3001**
-
-### Option 2: Docker Compose (Recommended)
-
-```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f auth-service
-
-# Stop services
-docker-compose down
-
-# Stop and remove volumes
-docker-compose down -v
-```
-
-## 📚 API Documentation
-
-### Swagger UI
-
-Once the application is running, access the API documentation:
-
-**URL:** http://localhost:3001/api/swagger-ui.html
-
-### Main Endpoints
-
-#### Authentication
-
-```http
-POST /api/v1/auth/register          # Register new user
-POST /api/v1/auth/login             # Login
-POST /api/v1/auth/refresh-token     # Refresh access token
-POST /api/v1/auth/logout            # Logout
-POST /api/v1/auth/forgot-password   # Request password reset
-POST /api/v1/auth/reset-password    # Reset password
-GET  /api/v1/auth/me                # Get current user
-```
-
-#### Users
-
-```http
-GET    /api/v1/users                # Get all users
-GET    /api/v1/users/{id}           # Get user by ID
-PUT    /api/v1/users/{id}           # Update user
-DELETE /api/v1/users/{id}           # Delete user
-```
-
-#### Health Check
-
-```http
-GET /api/health                     # Basic health check
-GET /api/actuator/health            # Detailed health check
-```
-
-### Example Request
-
-**Login:**
-
-```bash
-curl -X POST http://localhost:3001/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "identifier": "admin",
-    "password": "Admin@123456"
-  }'
-```
-
-**Response:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
-    "tokenType": "Bearer",
-    "expiresIn": 86400000,
-    "user": {
-      "id": "123e4567-e89b-12d3-a456-426614174000",
-      "username": "admin",
-      "email": "admin@smartconnect.edu.vn",
-      "fullName": "System Administrator",
-      "role": "SUPER_ADMIN"
-    }
-  }
-}
-```
-
-## 🧪 Testing
-
-### Run Tests
-
-```bash
-# All tests
-./mvnw test
-
-# Unit tests only
-./mvnw test -Dtest=*Test
-
-# Integration tests
-./mvnw test -Dtest=*IntegrationTest
-
-# With coverage
-./mvnw test jacoco:report
-```
-
-### Test Credentials
-
-Default users for testing:
-
-| Username | Password | Role |
-|----------|----------|------|
-| admin | Admin@123456 | SUPER_ADMIN |
-| student_demo | Student@123 | STUDENT |
-| teacher_demo | Teacher@123 | TEACHER |
-
-## 🔒 Security
-
-### Important Security Guidelines
-
-⚠️ **NEVER commit sensitive files to version control!**
-
-See [SECURITY.md](SECURITY.md) for detailed security guidelines.
-
-### Quick Security Checklist
-
-- ✅ Use `.env.example` as template (never commit `.env`)
-- ✅ Generate strong JWT secret: `openssl rand -base64 64`
-- ✅ Use different credentials for each environment
-- ✅ Enable HTTPS in production
-- ✅ Rotate secrets regularly
-- ✅ Review `.gitignore` before committing
-
-### Protected Files
-
-These files are **automatically ignored** by Git:
-- `.env` and `.env.*` (except `.env.example`)
-- `application-prod.properties`
-- `*-secret.properties`
-- `*.properties.local`
-
-### Setup Instructions
-
-1. Copy environment template:
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Generate secure JWT secret:
-   ```bash
-   openssl rand -base64 64
-   ```
-
-3. Update `.env` with your configuration
-
-4. Verify `.env` is NOT tracked:
-   ```bash
-   git status
-   # .env should NOT appear in output
-   ```
-
-For complete security guidelines, see [SECURITY.md](SECURITY.md).
-
-## 🗄️ Database
-
-### Migrations
-
-Flyway migrations are in `src/main/resources/db/migration/`
-
-```bash
-# Apply migrations
-./mvnw flyway:migrate
-
-# Validate migrations
-./mvnw flyway:validate
-
-# Clean database (⚠️ drops all data)
-./mvnw flyway:clean
-```
-
-### Schema
-
-Main tables:
-- `users` - User accounts
-- `refresh_tokens` - JWT refresh tokens
+---
 
 ## 🔧 Configuration
 
 ### Environment Variables
 
-Key environment variables:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DB_HOST` | PostgreSQL host | localhost |
-| `DB_PORT` | PostgreSQL port | 5432 |
-| `DB_NAME` | Database name | smartconnect_auth |
-| `REDIS_HOST` | Redis host | localhost |
-| `REDIS_PORT` | Redis port | 6379 |
-| `JWT_SECRET` | JWT secret key | (required) |
-| `SERVER_PORT` | Service port | 3001 |
-
-### Application Profiles
-
-- **dev** - Development mode (detailed logging, Swagger enabled)
-- **prod** - Production mode (minimal logging, Swagger disabled)
-- **test** - Testing mode (H2 in-memory database)
-
-## 📦 Build & Deployment
-
-### Build JAR
+Key environment variables (see `env.example`):
 
 ```bash
-./mvnw clean package -DskipTests
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=smartconnect_auth
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# JWT
+JWT_SECRET=your-secret-key-here
+JWT_ACCESS_TOKEN_EXPIRATION=86400000   # 24 hours
+JWT_REFRESH_TOKEN_EXPIRATION=604800000 # 7 days
+
+# Security
+ACCOUNT_LOCK_THRESHOLD=5
+ACCOUNT_LOCK_DURATION_MINUTES=30
 ```
 
-Output: `target/smartconnect-auth-service-0.0.1-SNAPSHOT.jar`
+---
 
-### Build Docker Image
+## 🔒 Security Features
 
-```bash
-docker build -t smartconnect/auth-service:latest .
-```
+### 1. Password Security
+- BCrypt hashing with strength 12
+- Password validation rules
+- Secure password reset flow
 
-### Run Docker Container
+### 2. Account Protection
+- Auto-lock after 5 failed attempts
+- 30-minute lock duration
+- Auto-unlock after timeout
 
-```bash
-docker run -d \
-  --name auth-service \
-  -p 3001:3001 \
-  -e DB_HOST=postgres \
-  -e REDIS_HOST=redis \
-  -e JWT_SECRET=your-secret \
-  smartconnect/auth-service:latest
-```
+### 3. Token Security
+- JWT with HS512 algorithm
+- Access token: 24 hours
+- Refresh token: 7 days
+- Token blacklist on logout
 
-## 🔍 Monitoring
+### 4. API Security
+- CORS configuration
+- Rate limiting
+- Input validation
+- SQL injection prevention
+
+---
+
+## 📊 Monitoring
 
 ### Health Checks
 
 ```bash
-# Basic health
-curl http://localhost:3001/api/health
-
-# Actuator health
+# Application health
 curl http://localhost:3001/api/actuator/health
 
-# Metrics
-curl http://localhost:3001/api/actuator/metrics
+# Detailed health
+curl http://localhost:3001/api/actuator/health/details
 ```
 
 ### Logs
 
 ```bash
 # View logs
-docker-compose logs -f auth-service
+tail -f logs/auth-service.log
 
-# Location: logs/auth-service.log
+# Docker logs
+docker logs -f smartconnect-auth-service
 ```
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**1. Database connection failed**
+```bash
+# Check PostgreSQL is running
+docker ps | grep postgres
+
+# Check connection
+psql -h localhost -p 5432 -U postgres -d smartconnect_auth
+```
+
+**2. Redis connection failed**
+```bash
+# Check Redis is running
+docker ps | grep redis
+
+# Test connection
+redis-cli -h localhost -p 6379 ping
+```
+
+**3. Port already in use**
+```bash
+# Find process using port 3001
+netstat -ano | findstr :3001
+
+# Kill process (Windows)
+taskkill /PID <PID> /F
+```
+
+---
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## 📝 License
-
-MIT License - see LICENSE file for details
-
-## 👥 Authors
-
-SmartConnect Development Team
-
-## 📧 Contact
-
-- Email: dev@smartconnect.edu.vn
-- GitHub: https://github.com/smartconnect-edu
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ---
 
-**Version:** 1.0.0  
-**Last Updated:** November 2025
+## 📝 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 📞 Support
+
+- **Issues:** [GitHub Issues](https://github.com/yourusername/smartconnect-auth-service/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/yourusername/smartconnect-auth-service/discussions)
+
+---
+
+## 🎉 What's Next?
+
+- [ ] Email verification
+- [ ] Password reset via email
+- [ ] OAuth2 integration (Google, GitHub)
+- [ ] Two-factor authentication (2FA)
+- [ ] User profile management
+- [ ] Audit logs
+- [ ] Advanced rate limiting
+
+---
+
+**Made with ❤️ by SmartConnect Team**
 
