@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -19,6 +21,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * JWT Authentication Filter
@@ -56,12 +60,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     // Validate token
                     if (jwtService.validateToken(jwt, userDetails)) {
-                        // Create authentication object
+                        // Extract role from token to ensure authorities match token claims
+                        String role = jwtService.getRoleFromToken(jwt);
+                        Collection<? extends GrantedAuthority> authorities;
+                        if (role != null) {
+                            authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                        } else {
+                            // Fallback to user details authorities if role not in token
+                            authorities = userDetails.getAuthorities();
+                        }
+                        
+                        // Create authentication object with authorities from token
                         UsernamePasswordAuthenticationToken authentication = 
                             new UsernamePasswordAuthenticationToken(
                                 userDetails,
                                 null,
-                                userDetails.getAuthorities()
+                                authorities
                             );
                         
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -69,7 +83,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         // Set authentication in security context
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                         
-                        log.debug("Set authentication for user: {}", username);
+                        log.debug("Set authentication for user: {} with role: {}", username, role);
                     }
                 } else if (tokenBlacklistService.isTokenBlacklisted(jwt)) {
                     log.warn("Attempted to use blacklisted token");

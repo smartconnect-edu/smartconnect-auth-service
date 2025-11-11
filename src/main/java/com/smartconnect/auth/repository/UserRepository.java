@@ -51,7 +51,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     /**
      * Find active users by role
      */
-    List<User> findByRoleAndIsActiveTrue(UserRole role);
+    @Query("SELECT u FROM User u WHERE u.role = :role AND u.isActive = true")
+    List<User> findByRoleAndIsActiveTrue(@Param("role") UserRole role);
 
     /**
      * Count users by role

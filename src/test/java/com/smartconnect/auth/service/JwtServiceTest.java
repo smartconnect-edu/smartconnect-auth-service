@@ -2,6 +2,7 @@ package com.smartconnect.auth.service;
 
 import com.smartconnect.auth.model.entity.User;
 import com.smartconnect.auth.model.enums.UserRole;
+import com.smartconnect.auth.service.impl.JwtServiceImpl;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,12 +35,7 @@ class JwtServiceTest {
 
     @BeforeEach
     void setUp() {
-        jwtService = new JwtService();
-        
-        // Set private fields using reflection
-        ReflectionTestUtils.setField(jwtService, "jwtSecret", TEST_SECRET);
-        ReflectionTestUtils.setField(jwtService, "accessTokenExpiration", ACCESS_TOKEN_EXPIRATION);
-        ReflectionTestUtils.setField(jwtService, "refreshTokenExpiration", REFRESH_TOKEN_EXPIRATION);
+        jwtService = createJwtService(TEST_SECRET, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN_EXPIRATION);
 
         testUser = User.builder()
                 .username("testuser")
@@ -50,6 +46,14 @@ class JwtServiceTest {
                 .isActive(true)
                 .build();
         testUser.setId(UUID.randomUUID());
+    }
+
+    private JwtService createJwtService(String secret, long accessExpiration, long refreshExpiration) {
+        JwtServiceImpl service = new JwtServiceImpl();
+        ReflectionTestUtils.setField(service, "jwtSecret", secret);
+        ReflectionTestUtils.setField(service, "accessTokenExpiration", accessExpiration);
+        ReflectionTestUtils.setField(service, "refreshTokenExpiration", refreshExpiration);
+        return service;
     }
 
     // ==================== ACCESS TOKEN GENERATION TESTS ====================
@@ -275,10 +279,7 @@ class JwtServiceTest {
     @DisplayName("Should detect expired token")
     void shouldDetectExpiredToken() {
         // Given - create a service with very short expiration
-        JwtService shortExpirationService = new JwtService();
-        ReflectionTestUtils.setField(shortExpirationService, "jwtSecret", TEST_SECRET);
-        ReflectionTestUtils.setField(shortExpirationService, "accessTokenExpiration", 1L); // 1ms
-        ReflectionTestUtils.setField(shortExpirationService, "refreshTokenExpiration", 1L);
+        JwtService shortExpirationService = createJwtService(TEST_SECRET, 1L, 1L); // 1ms
 
         String token = shortExpirationService.generateAccessToken(testUser);
 
@@ -330,12 +331,11 @@ class JwtServiceTest {
     @DisplayName("Should reject token signed with different secret")
     void shouldRejectTokenSignedWithDifferentSecret() {
         // Given
-        JwtService differentSecretService = new JwtService();
-        // Generate a 512-bit (64 bytes) secret key for HS512 (Base64 encoded ~88 chars)
-        String differentSecret = "ZGlmZmVyZW50LXNlY3JldC1rZXktZm9yLWp3dC10b2tlbi10ZXN0aW5nLXB1cnBvc2VzLW9ubHktdXNlZC1mb3ItdGVzdGluZy1zZWN1cml0eS1mZWF0dXJlcy1vZi1qd3QtbGlicmFyeQ==";
-        ReflectionTestUtils.setField(differentSecretService, "jwtSecret", differentSecret);
-        ReflectionTestUtils.setField(differentSecretService, "accessTokenExpiration", ACCESS_TOKEN_EXPIRATION);
-        ReflectionTestUtils.setField(differentSecretService, "refreshTokenExpiration", REFRESH_TOKEN_EXPIRATION);
+        JwtService differentSecretService = createJwtService(
+                "ZGlmZmVyZW50LXNlY3JldC1rZXktZm9yLWp3dC10b2tlbi10ZXN0aW5nLXB1cnBvc2VzLW9ubHktdXNlZC1mb3ItdGVzdGluZy1zZWN1cml0eS1mZWF0dXJlcy1vZi1qd3QtbGlicmFyeQ==",
+                ACCESS_TOKEN_EXPIRATION,
+                REFRESH_TOKEN_EXPIRATION
+        );
 
         String token = differentSecretService.generateAccessToken(testUser);
 

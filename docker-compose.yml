@@ -1,8 +1,8 @@
 services:
   # PostgreSQL Database
-  postgres:
+  auth-postgres:
     image: postgres:16-alpine
-    container_name: smartconnect-postgres
+    container_name: smartconnect-auth-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: smartconnect_auth
@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,12 +22,12 @@ services:
       - smartconnect-network
 
   # Redis Cache
-  redis:
+  auth-redis:
     image: redis:7-alpine
-    container_name: smartconnect-redis
+    container_name: smartconnect-auth-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "56379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -46,23 +46,23 @@ services:
     container_name: smartconnect-auth-service
     restart: unless-stopped
     depends_on:
-      postgres:
+      auth-postgres:
         condition: service_healthy
-      redis:
+      auth-redis:
         condition: service_healthy
     environment:
       # Spring Profile
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
       
       # Database Configuration
-      DB_HOST: postgres
+      DB_HOST: auth-postgres
       DB_PORT: 5432
       DB_NAME: smartconnect_auth
       DB_USERNAME: postgres
       DB_PASSWORD: ${DB_PASSWORD:-password}
       
       # Redis Configuration
-      REDIS_HOST: redis
+      REDIS_HOST: auth-redis
       REDIS_PORT: 6379
       
       # JWT Configuration
@@ -75,10 +75,10 @@ services:
       ACCOUNT_LOCK_DURATION_MINUTES: ${ACCOUNT_LOCK_DURATION_MINUTES:-30}
       
       # CORS Configuration
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://127.0.0.1:5500,http://localhost:5500}
       
       # Server Configuration
-      SERVER_PORT: 3001
+      SERVER_PORT: 8088
       SERVER_CONTEXT_PATH: /api
       
       # Logging
@@ -92,11 +92,11 @@ services:
         -XX:MaxGCPauseMillis=200
         -XX:+UseStringDeduplication
     ports:
-      - "3001:3001"
+      - "8088:8088"
     volumes:
       - app_logs:/app/logs
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/actuator/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8088/api/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3

@@ -7,15 +7,20 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 /**
  * OpenAPI/Swagger Configuration
  * Provides API documentation and interactive testing interface
  * 
- * Access Swagger UI at: http://localhost:3001/api/swagger-ui.html
- * Access API Docs at: http://localhost:3001/api/v3/api-docs
+ * Access Swagger UI at: http://localhost:{server.port}{server.servlet.context-path}/swagger-ui.html
+ * Access API Docs at: http://localhost:{server.port}{server.servlet.context-path}/v3/api-docs
  */
 @Configuration
 @OpenAPIDefinition(
@@ -63,20 +68,6 @@ import org.springframework.context.annotation.Configuration;
             url = "https://opensource.org/licenses/MIT"
         )
     ),
-    servers = {
-        @Server(
-            url = "http://localhost:3001/api",
-            description = "Local Development Server"
-        ),
-        @Server(
-            url = "https://staging.smartconnect.com/api",
-            description = "Staging Server"
-        ),
-        @Server(
-            url = "https://api.smartconnect.com/api",
-            description = "Production Server"
-        )
-    },
     security = {
         @SecurityRequirement(name = "Bearer Authentication")
     }
@@ -87,19 +78,43 @@ import org.springframework.context.annotation.Configuration;
     bearerFormat = "JWT",
     scheme = "bearer",
     description = """
-        Enter your JWT token in the format: **Bearer <token>**
+        Paste ONLY your JWT access token (do NOT include the "Bearer " prefix).
+        The Swagger UI will automatically add the "Bearer " prefix for you.
         
         To get a token:
-        1. Use the `/auth/register` endpoint to create an account
-        2. Use the `/auth/login` endpoint to get your tokens
+        1. Use the `/api/v1/auth/register` endpoint to create an account
+        2. Use the `/api/v1/auth/login` endpoint to get your tokens
         3. Copy the `accessToken` from the response
         4. Click the **Authorize** button above
-        5. Paste the token in the input field
+        5. Paste the token (without "Bearer ") in the input field
         6. Click **Authorize** to set the token for all requests
         
         The token will be automatically included in all protected endpoint requests.
         """
 )
 public class OpenApiConfig {
-    // Configuration is done through annotations
+
+    @Value("${server.port:3001}")
+    private int serverPort;
+
+    @Value("${server.servlet.context-path:/api}")
+    private String contextPath;
+
+    @Bean
+    public OpenAPI customOpenAPI() {
+        String baseUrl = "http://localhost:" + serverPort + contextPath;
+        
+        return new OpenAPI()
+            .servers(List.of(
+                new Server()
+                    .url(baseUrl)
+                    .description("Local Development Server"),
+                new Server()
+                    .url("https://staging.smartconnect.com/api")
+                    .description("Staging Server"),
+                new Server()
+                    .url("https://api.smartconnect.com/api")
+                    .description("Production Server")
+            ));
+    }
 }

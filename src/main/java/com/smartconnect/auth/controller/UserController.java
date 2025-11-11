@@ -63,7 +63,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get user by ID")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable UUID id) {
         log.info("Getting user by ID: {}", id);
         UserResponse userResponse = userService.getUserById(id);
@@ -73,7 +73,7 @@ public class UserController {
 
     @GetMapping
     @Operation(summary = "Get all active users")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Page<UserResponse>>> getAllActiveUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -104,7 +104,7 @@ public class UserController {
 
     @PutMapping("/{id}/activate")
     @Operation(summary = "Activate user account")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> activateUser(@PathVariable UUID id) {
         log.info("Activating user: {}", id);
         userService.activateUser(id);
@@ -114,7 +114,7 @@ public class UserController {
 
     @PutMapping("/{id}/deactivate")
     @Operation(summary = "Deactivate user account")
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF', 'SUPER_ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deactivateUser(@PathVariable UUID id) {
         log.info("Deactivating user: {}", id);
         userService.deactivateUser(id);

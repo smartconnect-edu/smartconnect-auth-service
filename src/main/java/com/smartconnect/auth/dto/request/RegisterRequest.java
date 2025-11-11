@@ -2,6 +2,7 @@ package com.smartconnect.auth.dto.request;
 
 import com.smartconnect.auth.model.enums.UserRole;
 import com.smartconnect.auth.util.Constants;
+import com.smartconnect.auth.validation.OptionalPhone;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -65,17 +66,17 @@ public class RegisterRequest {
     private String fullName;
 
     @Schema(
-        description = "Phone number (10-15 digits)",
+        description = "Phone number (10-15 digits, optional)",
         example = "0912345678"
     )
-    @Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must be 10-15 digits")
+    @OptionalPhone
     private String phone;
 
     @Schema(
         description = "User role",
-        example = "CUSTOMER",
+        example = "STUDENT",
         required = true,
-        allowableValues = {"CUSTOMER", "TECHNICIAN", "ADMIN"}
+        allowableValues = {"STUDENT", "TEACHER", "ADMIN", "SUPER_ADMIN"}
     )
     @NotNull(message = "Role is required")
     private UserRole role;

@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
  * Security Configuration
@@ -32,6 +33,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     /**
      * Configure HTTP Security
@@ -45,6 +47,9 @@ public class SecurityConfig {
         http
             // Disable CSRF since we're using JWT
             .csrf(AbstractHttpConfigurer::disable)
+            
+            // Configure CORS
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             
             // Configure authorization
             .authorizeHttpRequests(auth -> auth

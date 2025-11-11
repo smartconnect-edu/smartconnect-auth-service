@@ -19,15 +19,32 @@ public final class Constants {
     // Public Endpoints (no authentication required)
     public static final String[] PUBLIC_URLS = {
         // Auth endpoints
+        "/api" + AUTH_BASE_PATH + "/login",
+        "/api" + AUTH_BASE_PATH + "/register",
+        "/api" + AUTH_BASE_PATH + "/refresh-token",
+        "/api" + AUTH_BASE_PATH + "/refresh",
+        "/api" + AUTH_BASE_PATH + "/forgot-password",
+        "/api" + AUTH_BASE_PATH + "/reset-password",
+        
+        // Non-prefixed auth endpoints (for backward compatibility)
         AUTH_BASE_PATH + "/login",
         AUTH_BASE_PATH + "/register",
         AUTH_BASE_PATH + "/refresh-token",
+        AUTH_BASE_PATH + "/refresh",
         AUTH_BASE_PATH + "/forgot-password",
         AUTH_BASE_PATH + "/reset-password",
         
+        // Sample Data Generation (Public API)
+        "/api/v1/dev/generate-sample-data",
+        "/v1/dev/generate-sample-data",
+        
         // Health & Actuator endpoints
         "/health",
+        "/api/health",
+        "/api/v1/auth/health",
+        "/v1/auth/health",
         "/actuator/**",
+        "/api/actuator/**",
         
         // Swagger & OpenAPI endpoints
         "/swagger-ui/**",
